@@ -3,6 +3,11 @@ import csv
 import os
 from dataclasses import dataclass
 
+import matplotlib
+
+if os.environ.get("MST_HEADLESS") == "1":
+    matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
@@ -58,6 +63,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="indir", default="output")
     ap.add_argument("--extent", type=float, default=120.0)
+    ap.add_argument("--save", default=None, help="Save a PNG snapshot (headless-friendly).")
+    ap.add_argument("--dpi", type=int, default=140, help="PNG DPI for --save.")
+    ap.add_argument("--no-show", action="store_true", help="Do not open a GUI window.")
     args = ap.parse_args()
 
     truth = read_truth(os.path.join(args.indir, "truth.csv"))
@@ -98,10 +106,16 @@ def main() -> None:
         time_text.set_text(f"t = {t0:0.2f} s")
         return truth_sc, det_sc, track_sc, time_text
 
+    if args.save or args.no_show:
+        update(len(all_t) - 1)
+        if args.save:
+            fig.savefig(args.save, dpi=args.dpi)
+            print(f"Saved: {args.save}")
+        return
+
     FuncAnimation(fig, update, frames=len(all_t), interval=50, blit=True)
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-

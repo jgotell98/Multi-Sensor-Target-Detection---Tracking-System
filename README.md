@@ -21,7 +21,7 @@ cmake --build build -j
 ./build/mst_run --duration 20 --objects 3 --seed 1 --tracker ekf --out output
 ```
 
-On Windows you’ll typically run `build\\Release\\mst_run.exe` (depending on generator).
+On Windows you’ll typically run `build\\cpp\\Release\\mst_run.exe` with the Visual Studio generator.
 
 Outputs:
 - `output/truth.csv`

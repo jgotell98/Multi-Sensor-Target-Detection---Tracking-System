@@ -2,12 +2,20 @@ import argparse
 import json
 import os
 
+import matplotlib
+
+if os.environ.get("MST_HEADLESS") == "1":
+    matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="indir", default="output")
+    ap.add_argument("--save", default=None, help="Save a PNG (headless-friendly).")
+    ap.add_argument("--dpi", type=int, default=140, help="PNG DPI for --save.")
+    ap.add_argument("--no-show", action="store_true", help="Do not open a GUI window.")
     args = ap.parse_args()
 
     path = os.path.join(args.indir, "bench.json")
@@ -26,9 +34,14 @@ def main() -> None:
     ax.set_title("Benchmark summary")
     ax.grid(True, axis="y", alpha=0.3)
     plt.tight_layout()
+    if args.save:
+        fig.savefig(args.save, dpi=args.dpi)
+        print(f"Saved: {args.save}")
+        return
+    if args.no_show:
+        return
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-
