@@ -68,6 +68,16 @@ def main() -> None:
     ap.add_argument("--no-show", action="store_true", help="Do not open a GUI window.")
     args = ap.parse_args()
 
+    backend = matplotlib.get_backend().lower()
+    if backend == "agg" and not (args.save or args.no_show):
+        print(
+            "Matplotlib is using the non-GUI 'Agg' backend, so no window will appear.\n"
+            "Fix: unset MST_HEADLESS/MPLBACKEND (or install a GUI backend like Tk/Qt) and rerun.\n"
+            "PowerShell: `Remove-Item Env:\\MST_HEADLESS -ErrorAction SilentlyContinue; "
+            "Remove-Item Env:\\MPLBACKEND -ErrorAction SilentlyContinue`",
+            flush=True,
+        )
+
     truth = read_truth(os.path.join(args.indir, "truth.csv"))
     tracks = read_tracks(os.path.join(args.indir, "tracks.csv"))
     dets = read_radar_dets(os.path.join(args.indir, "detections.csv"))
@@ -113,8 +123,11 @@ def main() -> None:
             print(f"Saved: {args.save}")
         return
 
-    FuncAnimation(fig, update, frames=len(all_t), interval=50, blit=True)
-    plt.show()
+    # Keep a reference to the animation; otherwise it can be garbage-collected
+    # before rendering on some backends.
+    anim = FuncAnimation(fig, update, frames=len(all_t), interval=50, blit=True)
+    plt.show(block=True)
+    _ = anim
 
 
 if __name__ == "__main__":
